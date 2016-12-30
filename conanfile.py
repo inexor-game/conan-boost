@@ -5,7 +5,7 @@ import platform, os, sys
 
 class BoostConan(ConanFile):
     name = "Boost"
-    version = "1.62.0"
+    version = "1.63.0"
     settings = "os", "arch", "compiler", "build_type"
     FOLDER_NAME = "boost_%s" % version.replace(".", "_")
     # The current python option requires the package to be built locally, to find default Python implementation
@@ -43,7 +43,7 @@ class BoostConan(ConanFile):
         "without_wave": [True, False]
     }
 
-    default_options = "shared=False", \
+    default_options = "shared=True", \
         "header_only=False", \
         "fPIC=False", \
         "python=False", \
@@ -75,7 +75,7 @@ class BoostConan(ConanFile):
         "without_type_erasure=False", \
         "without_wave=False"
 
-    url="https://github.com/lasote/conan-boost"
+    url="https://github.com/eliaskousk/conan-boost"
     exports = ["FindBoost.cmake", "OriginalFindBoost*"]
     license="Boost Software License - Version 1.0. http://www.boost.org/LICENSE_1_0.txt"
     short_paths = True
@@ -227,7 +227,7 @@ class BoostConan(ConanFile):
             tools.cpu_count(),
             without_python)
         self.output.warn(full_command)
-        
+
         envs = self.prepare_deps_options_env()
         with tools.environment_append(envs):
             self.run(full_command)#, output=False)
@@ -241,7 +241,7 @@ class BoostConan(ConanFile):
 #             ret["BZIP2_BINARY"] = lib_name
 #             ret["BZIP2_INCLUDE"] = include_path
 #             ret["BZIP2_LIBPATH"] = lib_path
-            
+
         return ret
 
     def package(self):
