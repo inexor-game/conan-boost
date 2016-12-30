@@ -6,9 +6,9 @@ language: python
 env:
   global:
     - CONAN_UPLOAD=1
-    - CONAN_REFERENCE="Boost/1.62.0"
-    - CONAN_USERNAME="lasote"
-    - CONAN_CHANNEL="testing"
+    - CONAN_REFERENCE="Boost/1.63.0"
+    - CONAN_USERNAME="eliaskousk"
+    - CONAN_CHANNEL="stable"
     - CONAN_TOTAL_PAGES=8
     - CONAN_STABLE_BRANCH_PATTERN="release/*"
 
