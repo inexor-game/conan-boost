@@ -4,7 +4,7 @@ import os
 import sys
 
 ############### CONFIGURE THESE VALUES ##################
-default_user = "eliaskousk"
+default_user = "windoze"
 default_channel = "stable"
 #########################################################
 

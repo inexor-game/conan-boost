@@ -75,7 +75,7 @@ class BoostConan(ConanFile):
         "without_type_erasure=False", \
         "without_wave=False"
 
-    url="https://github.com/eliaskousk/conan-boost"
+    url="https://github.com/windoze/conan-boost"
     exports = ["FindBoost.cmake", "OriginalFindBoost*"]
     license="Boost Software License - Version 1.0. http://www.boost.org/LICENSE_1_0.txt"
     short_paths = True
@@ -106,7 +106,7 @@ class BoostConan(ConanFile):
                 self.requires("bzip2/1.0.6@lasote/stable")
                 if not self.options.header_only:
                     self.options["bzip2/1.0.6"].shared = self.options.shared
-            self.requires("zlib/1.2.9@lasote/stable")
+            self.requires("zlib/1.2.11@windoze/stable")
             if not self.options.header_only:
                 self.options["zlib"].shared = self.options.shared
 
