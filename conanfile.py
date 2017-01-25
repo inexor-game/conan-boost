@@ -132,14 +132,12 @@ class BoostConan(ConanFile):
             self.output.warn("Header only package, skipping build")
             return
         command = "bootstrap" if self.settings.os == "Windows" else "./bootstrap.sh"
-        if self.settings.os == "Windows" and self.settings.compiler == "gcc":
-            command += " mingw"
         try:
             self.run("cd %s && %s" % (self.FOLDER_NAME, command))
         except:
             self.run("cd %s && type bootstrap.log" % self.FOLDER_NAME
-                     if self.settings.os == "Windows"
-                     else "cd %s && cat bootstrap.log" % self.FOLDER_NAME)
+                    if self.settings.os == "Windows"
+                    else "cd %s && cat bootstrap.log" % self.FOLDER_NAME)
             raise
 
         flags = []
@@ -183,7 +181,7 @@ class BoostConan(ConanFile):
             "--without-wave": self.options.without_wave
         }
 
-        for option_name, activated in option_names.iteritems():
+        for option_name, activated in option_names.items():
             if activated:
                 flags.append(option_name)
 
