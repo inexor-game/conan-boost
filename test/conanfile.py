@@ -4,8 +4,8 @@ import os
 import sys
 
 ############### CONFIGURE THESE VALUES ##################
-default_user = "eliaskousk"
-default_channel = "stable"
+default_user = "kbinani"
+default_channel = "testing"
 #########################################################
 
 channel = os.getenv("CONAN_CHANNEL", default_channel)
