@@ -1,5 +1,6 @@
 *.pyc
 *.log
+/test/build
 /boost_*
 /conanbuildinfo.txt
 /conanenv.txt

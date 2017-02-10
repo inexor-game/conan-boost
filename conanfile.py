@@ -1,6 +1,6 @@
 from conans import ConanFile
 from conans import tools
-import platform, os, sys
+import platform, os, sys, urllib
 
 
 class BoostConan(ConanFile):
@@ -85,8 +85,11 @@ class BoostConan(ConanFile):
         "without_timer": [False, True],
         "without_type_erasure": [False, True],
         "without_wave": [False, True],
+        "cxxdefines": "ANY", # '=' should be urlencoded to %3D. example: -o cxxdefines="MACRO1;MACRO2%3D1"
+        "cxxflags": "ANY", # '=' should be urlencoded to %3D. example: -o cxxflags="-Werror%3Duninitialized;-Wno-unknown-pragmas"
     }
-    default_options = [(key, value[0]) for key, value in options.items()]
+    default_options = [(key, value[0]) for key, value in options.items() if isinstance(value, list)] \
+                    + [(key, "") for key, value in options.items() if value == "ANY"]
 
     def config_options(self):
         """ First configuration step. Only settings are defined. Options can be removed
@@ -178,8 +181,6 @@ class BoostConan(ConanFile):
         cxx_flags = []
 
         if self.settings.compiler != "Visual Studio":
-            cxx_flags.append("-Wno-unused-private-field")
-
             # fPIC DEFINITION
             if self.options.fPIC:
                 cxx_flags.append("-fPIC")
@@ -201,6 +202,12 @@ class BoostConan(ConanFile):
         except:
             pass
 
+        if self.options.cxxdefines != "":
+            flags.extend(["define=%s" % d for d in urllib.unquote(str(self.options.cxxdefines)).split(";")])
+
+        if self.options.cxxflags != "":
+            cxx_flags.extend(urllib.unquote(str(self.options.cxxflags)).split(";"))
+
         cxx_flags = 'cxxflags="%s"' % " ".join(cxx_flags) if cxx_flags else ""
         flags.append(cxx_flags)
 
@@ -218,7 +225,7 @@ class BoostConan(ConanFile):
 
         envs = self.prepare_deps_options_env()
         with tools.environment_append(envs):
-            self.run(full_command)#, output=False)
+            self.run(full_command)
 
     def prepare_deps_options_env(self):
         ret = {}
@@ -258,6 +265,9 @@ class BoostConan(ConanFile):
             if not self.options.shared:
                 self.cpp_info.defines.append("BOOST_PYTHON_STATIC_LIB")
 
+        if self.options.cxxdefines != "":
+            self.cpp_info.defines.extend(str(self.options.cxxdefines).split(";"))
+
         enabled_libs = [lib.split("without_")[1] for lib, disable in self._without_options().items() if disable == False]
         libs_created = []
         for lib in enabled_libs:
@@ -271,7 +281,7 @@ class BoostConan(ConanFile):
             win_libs = []
             # http://www.boost.org/doc/libs/1_55_0/more/getting_started/windows.html
             visual_version = int(str(self.settings.compiler.version)) * 10
-            runtime = "mt" # str(self.settings.compiler.runtime).lower()
+            threading = "mt"
 
             abi_tags = []
             if self.settings.compiler.runtime in ("MTd", "MT"):
@@ -283,7 +293,7 @@ class BoostConan(ConanFile):
             abi_tags = ("-%s" % "".join(abi_tags)) if abi_tags else ""
 
             version = "_".join(self.version.split(".")[0:2])
-            suffix = "vc%d-%s%s-%s" %  (visual_version, runtime, abi_tags, version)
+            suffix = "vc%d-%s%s-%s" %  (visual_version, threading, abi_tags, version)
             prefix = "lib" if not self.options.shared else ""
 
             for lib in libs_created:
@@ -293,7 +303,6 @@ class BoostConan(ConanFile):
                 else:
                     win_libs.append("%sboost_%s-%s" % (prefix, lib, suffix))
 
-            #self.output.warn("EXPORTED BOOST LIBRARIES: %s" % win_libs)
             self.cpp_info.libs.extend(win_libs)
             self.cpp_info.defines.extend(["BOOST_ALL_NO_LIB"]) # DISABLES AUTO LINKING! NO SMART AND MAGIC DECISIONS THANKS!
 
