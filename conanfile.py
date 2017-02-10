@@ -115,6 +115,7 @@ class BoostConan(ConanFile):
             # Should be doable in package_id() but the UX is not ready
             self.options.remove("shared")
             self.options.remove("fPIC")
+            self.options.remove("cxxflags")
             self.options.without_python = True
 
         if not self.options.without_iostreams:
