@@ -133,10 +133,16 @@ class BoostConan(ConanFile):
     def source(self):
         zip_name = "%s.zip" % self.FOLDER_NAME if sys.platform == "win32" else "%s.tar.gz" % self.FOLDER_NAME
         url = "http://sourceforge.net/projects/boost/files/boost/%s/%s/download" % (self.version, zip_name)
-        self.output.info("Downloading %s..." % url)
-        tools.download(url, zip_name)
-        tools.unzip(zip_name, ".")
-        os.unlink(zip_name)
+        self._download(url, zip_name)
+        if not os.path.isdir(self.FOLDER_NAME):
+            tools.unzip(zip_name, ".")
+
+        # Apply post-release patch: http://www.boost.org/users/history/version_1_63_0.html#version_1_63_0.post_release_patches
+        patch_a67cc1b_url = "https://github.com/boostorg/atomic/commit/a67cc1b.patch"
+        patch_a67cc1b_file = "a67cc1b.patch"
+        self._download(patch_a67cc1b_url, patch_a67cc1b_file)
+        self.output.info("Applying %s..." % patch_a67cc1b_url)
+        tools.patch(base_path="%s/boost/atomic/detail" % self.FOLDER_NAME, patch_file=patch_a67cc1b_file, strip=4)
 
     def build(self):
         enabled_libs = [lib for lib, disable in self._without_options().items() if disable == False]
@@ -316,3 +322,8 @@ class BoostConan(ConanFile):
 
     def _is_msvc(self):
         return self.settings.compiler == "Visual Studio"
+
+    def _download(self, url, dest_filepath):
+        self.output.info("Downloading%s %s..." % ("(cached)" if os.path.isfile(dest_filepath) else "", url))
+        if not os.path.isfile(dest_filepath):
+            tools.download(url, dest_filepath)
