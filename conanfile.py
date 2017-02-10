@@ -8,7 +8,7 @@ class BoostConan(ConanFile):
     version = "1.63.0"
     description = "Boost provides free peer-reviewed portable C++ source libraries."
     license = "Boost Software License - Version 1.0. http://www.boost.org/LICENSE_1_0.txt"
-    url = "https://github.com/kbinani/conan-boost"
+    url = "https://github.com/kbinani/conan-boost/tree/develop/1.63.0"
 
     settings = "os", "arch", "compiler", "build_type"
     exports = ["FindBoost.cmake", "OriginalFindBoost*"]
@@ -95,19 +95,19 @@ class BoostConan(ConanFile):
         """ First configuration step. Only settings are defined. Options can be removed
         according to these settings
         """
-        if self.settings.compiler == "Visual Studio":
+        if self._is_msvc():
             self.options.remove("fPIC")
 
     def configure(self):
         """ Second configuration step. Both settings and options have values, in this case
         we can force static library if MT was specified as runtime
         """
-        if self.settings.compiler == "Visual Studio" and \
+        if self._is_msvc() and \
            self.options.shared and "MT" in str(self.settings.compiler.runtime):
             self.options.shared = False
 
         if self.options.header_only:
-            # Should be doable in conan_info() but the UX is not ready
+            # Should be doable in package_id() but the UX is not ready
             self.options.remove("shared")
             self.options.remove("fPIC")
             self.options.without_python = True
@@ -164,7 +164,7 @@ class BoostConan(ConanFile):
             if self.options.without_mpi == False or self.options.without_graph_parallel == False:
                 user_jam.write("using mpi ;\n")
 
-        if self.settings.compiler == "Visual Studio":
+        if self._is_msvc():
             flags.append("toolset=msvc-%s.0" % self.settings.compiler.version)
         elif str(self.settings.compiler) in ["clang", "gcc"]:
             flags.append("toolset=%s"% self.settings.compiler)
@@ -180,7 +180,7 @@ class BoostConan(ConanFile):
 
         cxx_flags = []
 
-        if self.settings.compiler != "Visual Studio":
+        if not self._is_msvc():
             # fPIC DEFINITION
             if self.options.fPIC:
                 cxx_flags.append("-fPIC")
@@ -261,9 +261,8 @@ class BoostConan(ConanFile):
         if self.options.header_only:
             return
 
-        if not self.options.without_python:
-            if not self.options.shared:
-                self.cpp_info.defines.append("BOOST_PYTHON_STATIC_LIB")
+        if not self.options.without_python and not self.options.shared:
+            self.cpp_info.defines.append("BOOST_PYTHON_STATIC_LIB")
 
         if self.options.cxxdefines != "":
             self.cpp_info.defines.extend(str(self.options.cxxdefines).split(";"))
@@ -274,11 +273,21 @@ class BoostConan(ConanFile):
             if lib in self.LIB_DEPENDENCIES:
                 libs_created += self.LIB_DEPENDENCIES[lib]
 
-        if self.settings.compiler != "Visual Studio":
-            libname_template = "boost_%s" if self.options.shared else "libboost_%s.a"
-            self.cpp_info.libs.extend([libname_template % lib for lib in libs_created])
-        else:
-            win_libs = []
+        self.cpp_info.libs.extend([self._linkname(lib) for lib in libs_created])
+
+        if self._is_msvc():
+            # DISABLES AUTO LINKING! NO SMART AND MAGIC DECISIONS THANKS!
+            self.cpp_info.defines.extend(["BOOST_ALL_NO_LIB"])
+
+    def _options(self):
+        option_values = self.options.values.as_list()
+        return dict([(k, v) for k, v in option_values])
+
+    def _without_options(self):
+        return dict([(lib, disable) for lib, disable in self._options().items() if lib.startswith("without_")])
+
+    def _linkname(self, lib):
+        if self._is_msvc():
             # http://www.boost.org/doc/libs/1_55_0/more/getting_started/windows.html
             visual_version = int(str(self.settings.compiler.version)) * 10
             threading = "mt"
@@ -294,21 +303,16 @@ class BoostConan(ConanFile):
 
             version = "_".join(self.version.split(".")[0:2])
             suffix = "vc%d-%s%s-%s" %  (visual_version, threading, abi_tags, version)
-            prefix = "lib" if not self.options.shared else ""
+            prefix = "" if self.options.shared else "lib"
 
-            for lib in libs_created:
-                if lib in ["exception", "test_exec_monitor"]:
-                    # These libraries have always 'lib' prefix
-                    win_libs.append("libboost_%s-%s" % (lib, suffix))
-                else:
-                    win_libs.append("%sboost_%s-%s" % (prefix, lib, suffix))
+            if lib in ("exception", "test_exec_monitor"):
+                # These libraries have always 'lib' prefix
+                win_libs.append("libboost_%s-%s" % (lib, suffix))
+            else:
+                win_libs.append("%sboost_%s-%s" % (prefix, lib, suffix))
+        else:
+            libname_template = "boost_%s" if self.options.shared else "libboost_%s.a"
+            return libname_template % lib
 
-            self.cpp_info.libs.extend(win_libs)
-            self.cpp_info.defines.extend(["BOOST_ALL_NO_LIB"]) # DISABLES AUTO LINKING! NO SMART AND MAGIC DECISIONS THANKS!
-
-    def _options(self):
-        option_values = self.options.values.as_list()
-        return dict([(k, v) for k, v in option_values])
-
-    def _without_options(self):
-        return dict([(lib, disable) for lib, disable in self._options().items() if lib.startswith("without_")])
+    def _is_msvc(self):
+        return self.settings.compiler == "Visual Studio"
