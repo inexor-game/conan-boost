@@ -16,7 +16,7 @@ class BoostConan(ConanFile):
 
     FOLDER_NAME = "boost_%s" % version.replace(".", "_")
 
-    # This dict was automatically created with tool/construct_dependency_tree.sh
+    # For dev: This dict was automatically created with tool/construct_dependency_tree.sh
     LIB_DEPENDENCIES = {
         "atomic": ["atomic"],
         "chrono": ["chrono", "system"],
@@ -51,10 +51,17 @@ class BoostConan(ConanFile):
     }
 
     # The current python option requires the package to be built locally, to find default Python implementation
+    # For `cxxdefines` and `cxxflags` '=' should be urlencoded to %3D,
+    # because conan reject option values which contain '=' like: `-o cxxdefines=NDEBUG=1`.
+    # Example: 
+    #    -o cxxdefines="MACRO1;MACRO2%3D1" -o cxxflags="-Werror%3Duninitialized;-Wno-unknown-pragmas"
+    # For dev: This dict was automatically created with tool/construct_options.sh
     options = {
         "shared": [True, False],
         "header_only": [False, True],
         "fPIC": [False, True],
+        "cxxdefines": "ANY",
+        "cxxflags": "ANY",
         "without_atomic": [False, True],
         "without_chrono": [False, True],
         "without_container": [False, True],
@@ -85,8 +92,6 @@ class BoostConan(ConanFile):
         "without_timer": [False, True],
         "without_type_erasure": [False, True],
         "without_wave": [False, True],
-        "cxxdefines": "ANY", # '=' should be urlencoded to %3D. example: -o cxxdefines="MACRO1;MACRO2%3D1"
-        "cxxflags": "ANY", # '=' should be urlencoded to %3D. example: -o cxxflags="-Werror%3Duninitialized;-Wno-unknown-pragmas"
     }
     default_options = [(key, value[0]) for key, value in options.items() if isinstance(value, list)] \
                     + [(key, "") for key, value in options.items() if value == "ANY"]
@@ -175,8 +180,8 @@ class BoostConan(ConanFile):
         elif str(self.settings.compiler) in ["clang", "gcc"]:
             flags.append("toolset=%s"% self.settings.compiler)
 
-        flags.append("link=%s" % ("static" if not self.options.shared else "shared"))
-        if self.settings.compiler == "Visual Studio" and self.settings.compiler.runtime:
+        flags.append("link=%s" % ("shared" if self.options.shared else "static"))
+        if self._is_msvc() and self.settings.compiler.runtime:
             flags.append("runtime-link=%s" % ("static" if "MT" in str(self.settings.compiler.runtime) else "shared"))
         flags.append("variant=%s" % str(self.settings.build_type).lower())
         flags.append("address-model=%s" % ("32" if self.settings.arch == "x86" else "64"))
