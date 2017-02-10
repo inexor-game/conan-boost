@@ -313,9 +313,9 @@ class BoostConan(ConanFile):
 
             if lib in ("exception", "test_exec_monitor"):
                 # These libraries have always 'lib' prefix
-                win_libs.append("libboost_%s-%s" % (lib, suffix))
+                return "libboost_%s-%s" % (lib, suffix)
             else:
-                win_libs.append("%sboost_%s-%s" % (prefix, lib, suffix))
+                return "%sboost_%s-%s" % (prefix, lib, suffix)
         else:
             libname_template = "boost_%s" if self.options.shared else "libboost_%s.a"
             return libname_template % lib
