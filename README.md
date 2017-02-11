@@ -79,10 +79,41 @@ Here is an example how to build a project with `conan-boost`.
 
 ## package specific options
 
-|option                |description                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |default|
-|----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------|
-|`Boost:shared`        |if `True`, build dynamic link libraries. This option will be ignored when `header_only` is set to `True`.                                                                                                                                                                                                                                                                                                                                                                        |`True` |
-|`Boost:header_only`   |if `True`, install boost with header only mode.                                                                                                                                                                                                                                                                                                                                                                                                                                  |`False`|
-|`Boost:cxxdefines`    |`;` separated list of preprocessor macros. To define macro with value, escape `=` to `%3D`. ex) `Boost:cxxdefines="FOO;BAR%3D1"`                                                                                                                                                                                                                                                                                                                                                 |       |
-|`Boost:cxxflags`      |Additional compile flags, separated with `;`. `=` should be escaped to `%3D`. ex) `Boost::cxxflags=--foo;--bar%3D1`. This option will be ignored when `header_only` is set to `True`.                                                                                                                                                                                                                                                                                            |       |
-|`Boost:without_{name}`|Exclude library `{name}` from build. This option will be ignored when `header_only` is set to `True`. `{name}` should be `atomic`, `chrono`, `container`, `context`, `coroutine`, `coroutine2`, `date_time`, `exception`, `fiber`, `filesystem`, `graph`, `graph_parallel`, `iostreams`, `locale`, `log`, `math`, `metaparse`, `mpi`, `program_options`, `python`, `random`, `regex`, `serialization`, `signals`, `system`, `test`, `thread`, `timer`, `type_erasure`, or `wave`.|`False`|
+|option                         |description                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |default|
+|-------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------|
+|`Boost:shared`                 |If `True`, build dynamic link libraries. This option will be ignored when `header_only` is set to `True`.                                                                            |`True` |
+|`Boost:header_only`            |If `True`, install boost with header only mode.                                                                                                                                      |`False`|
+|`Boost:cxxdefines`             |`;` separated list of preprocessor macros. To define macro with value, escape `=` to `%3D`. ex) `Boost:cxxdefines="FOO;BAR%3D1"`                                                     |       |
+|`Boost:cxxflags`               |Additional compile flags, separated with `;`. `=` should be escaped to `%3D`. ex) `Boost::cxxflags=--foo;--bar%3D1`. This option will be ignored when `header_only` is set to `True`.|       |
+|`Boost:without_atomic`         |If `True`, exclude the library from build.                                                                                                                                           |`False`|
+|`Boost:without_chrono`         |&#12291;|`False`|
+|`Boost:without_container`      |&#12291;|`False`|
+|`Boost:without_context`        |&#12291;|`False`|
+|`Boost:without_coroutine`      |&#12291;|`False`|
+|`Boost:without_coroutine2`     |&#12291;|`False`|
+|`Boost:without_date_time`      |&#12291;|`False`|
+|`Boost:without_exception`      |&#12291;|`False`|
+|`Boost:without_fiber`          |&#12291;|`False`|
+|`Boost:without_filesystem`     |&#12291;|`False`|
+|`Boost:without_graph`          |&#12291;|`False`|
+|`Boost:without_graph_parallel` |&#12291;|`True`<sup>[1](#about_excluded_libs)</sup>|
+|`Boost:without_iostreams`      |&#12291;|`False`|
+|`Boost:without_locale`         |&#12291;|`False`|
+|`Boost:without_log`            |&#12291;|`False`|
+|`Boost:without_math`           |&#12291;|`False`|
+|`Boost:without_metaparse`      |&#12291;|`False`|
+|`Boost:without_mpi`            |&#12291;|`True`<sup>[1](#about_excluded_libs)</sup>|
+|`Boost:without_program_options`|&#12291;|`False`|
+|`Boost:without_python`         |&#12291;|`True`<sup>[1](#about_excluded_libs)</sup>|
+|`Boost:without_random`         |&#12291;|`False`|
+|`Boost:without_regex`          |&#12291;|`False`|
+|`Boost:without_serialization`  |&#12291;|`False`|
+|`Boost:without_signals`        |&#12291;|`False`|
+|`Boost:without_system`         |&#12291;|`False`|
+|`Boost:without_test`           |&#12291;|`False`|
+|`Boost:without_thread`         |&#12291;|`False`|
+|`Boost:without_timer`          |&#12291;|`False`|
+|`Boost:without_type_erasure`   |&#12291;|`False`|
+|`Boost:without_wave`           |&#12291;|`False`|
+
+<a name="about_excluded_libs">1</a>: These libraries are excluded by default because they have external library dependecies such as python or mpi.
