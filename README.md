@@ -8,40 +8,81 @@
 
 The packages generated with this **conanfile** can be found in [conan.io](https://conan.io/source/Boost/1.63.0/kbinani/develop).
 
-## Build packages
+## dependencies
 
-Download conan client from [Conan.io](https://conan.io) and run:
+* conan [Conan.io](https://conan.io)
+* cmake
+* modern C++ compiler (Xcode, Visual Studio, etc.)
 
-    $ python build.py
+## example
+
+Here is an example how to build a project with `conan-boost`.
+
+1. write a `conanfile.txt`
     
-## Upload packages to server
-
-    $ conan upload Boost/1.63.0@kbinani/develop --all
-    
-## Reuse the packages
-
-### Basic setup
-
-    $ conan install Boost/1.63.0@kbinani/develop
-    
-### Project setup
-
-If you handle multiple dependencies in your project is better to add a *conanfile.txt*
-    
+    ```
     [requires]
     Boost/1.63.0@kbinani/develop
 
     [options]
     Boost:shared=true # false
-    # Take a look for all available options in conanfile.py
-    
+    # write custom options here. see `package specific options` section for detail
+
     [generators]
-    txt
     cmake
+    ```
 
-Complete the installation of requirements for your project running:</small></span>
+1. write a `CMakeLists.txt`
 
-    conan install . 
+    ```
+    project(example)
+    cmake_minimum_required(VERSION 2.8)
+    set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_BINARY_DIR})
+    include(conanbuildinfo)
+    conan_basic_setup()
+    add_executable(example main.cpp)
+    target_link_libraries(example ${CONAN_LIBS})
+    ```
 
-Project setup installs the library (and all his dependencies) and generates the files *conanbuildinfo.txt* and *conanbuildinfo.cmake* with all the paths and variables that you need to link with your dependencies.
+1. create out-of-source build directory
 
+	```
+    mkdir debug32
+    ```
+
+1. install packages
+
+    ```
+    cd debug32
+    conan install .. --update --build missing -s build_type=Debug -s arch=x86
+    ```
+
+1. generate project file
+
+    ```
+    cd debug32
+    cmake .. -G "Visual Studio 14 2015"
+    ```
+    or
+    ```
+    cd debug32
+    cmake .. -G Xcode
+    ```
+    etc.
+
+1. build the project
+
+	```
+    cd debug32
+    cmake --build . --config Debug
+    ```
+
+## package specific options
+
+|option                |description                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |default|
+|----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------|
+|`Boost:shared`        |if `True`, build dynamic link libraries. This option will be ignored when `header_only` is set to `True`.                                                                                                                                                                                                                                                                                                                                                                        |`True` |
+|`Boost:header_only`   |if `True`, install boost with header only mode.                                                                                                                                                                                                                                                                                                                                                                                                                                  |`False`|
+|`Boost:cxxdefines`    |`;` separated list of preprocessor macros. To define macro with value, escape `=` to `%3D`. ex) `Boost:cxxdefines="FOO;BAR%3D1"`                                                                                                                                                                                                                                                                                                                                                 |       |
+|`Boost:cxxflags`      |Additional compile flags, separated with `;`. `=` should be escaped to `%3D`. ex) `Boost::cxxflags=--foo;--bar%3D1`. This option will be ignored when `header_only` is set to `True`.                                                                                                                                                                                                                                                                                            |       |
+|`Boost:without_{name}`|Exclude library `{name}` from build. This option will be ignored when `header_only` is set to `True`. `{name}` should be `atomic`, `chrono`, `container`, `context`, `coroutine`, `coroutine2`, `date_time`, `exception`, `fiber`, `filesystem`, `graph`, `graph_parallel`, `iostreams`, `locale`, `log`, `math`, `metaparse`, `mpi`, `program_options`, `python`, `random`, `regex`, `serialization`, `signals`, `system`, `test`, `thread`, `timer`, `type_erasure`, or `wave`.|`False`|
