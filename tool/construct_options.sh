@@ -7,7 +7,6 @@ DIR=boost_1_63_0
 	echo '    options = {'
 	echo '        "shared": [True, False],'
 	echo '        "header_only": [False, True],'
-	echo '        "fPIC": [False, True],'
 	echo '        "cxxdefines": "ANY",'
 	echo '        "cxxflags": "ANY",'
 	./b2 --show-libraries | grep '-' | sed 's/^.*- \(.*\)$/        "without_\1": [False, True],/g'

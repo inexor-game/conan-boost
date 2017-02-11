@@ -59,7 +59,6 @@ class BoostConan(ConanFile):
     options = {
         "shared": [True, False],
         "header_only": [False, True],
-        "fPIC": [False, True],
         "cxxdefines": "ANY",
         "cxxflags": "ANY",
         "without_atomic": [False, True],
@@ -96,13 +95,6 @@ class BoostConan(ConanFile):
     default_options = [(key, value[0]) for key, value in options.items() if isinstance(value, list)] \
                     + [(key, "") for key, value in options.items() if value == "ANY"]
 
-    def config_options(self):
-        """ First configuration step. Only settings are defined. Options can be removed
-        according to these settings
-        """
-        if self._is_msvc():
-            self.options.remove("fPIC")
-
     def configure(self):
         """ Second configuration step. Both settings and options have values, in this case
         we can force static library if MT was specified as runtime
@@ -114,7 +106,6 @@ class BoostConan(ConanFile):
         if self.options.header_only:
             # Should be doable in package_id() but the UX is not ready
             self.options.remove("shared")
-            self.options.remove("fPIC")
             self.options.remove("cxxflags")
             self.options.without_python = True
 
@@ -191,11 +182,6 @@ class BoostConan(ConanFile):
         flags += active_without_options
 
         cxx_flags = []
-
-        if not self._is_msvc():
-            # fPIC DEFINITION
-            if self.options.fPIC:
-                cxx_flags.append("-fPIC")
 
         # LIBCXX DEFINITION FOR BOOST B2
         try:
