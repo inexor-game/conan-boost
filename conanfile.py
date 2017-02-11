@@ -16,40 +16,6 @@ class BoostConan(ConanFile):
 
     FOLDER_NAME = "boost_%s" % version.replace(".", "_")
 
-    # For dev: This dict was automatically created with tool/make_options.py
-    LIB_DEPENDENCIES = {
-        "atomic": ["atomic"],
-        "chrono": ["chrono", "system"],
-        "container": ["container"],
-        "context": ["context"],
-        "coroutine": ["chrono", "context", "coroutine", "system", "thread"],
-        "coroutine2": ["context"],
-        "date_time": ["date_time"],
-        "exception": ["exception"],
-        "fiber": ["context", "fiber"],
-        "filesystem": ["filesystem", "system"],
-        "graph": ["graph", "regex"],
-        "graph_parallel": ["graph_parallel", "mpi", "serialization"],
-        "iostreams": ["iostreams"],
-        "locale": ["locale", "system"],
-        "log": ["atomic", "chrono", "date_time", "filesystem", "log", "log_setup", "regex", "system", "thread"],
-        "math": ["math_c99", "math_c99f", "math_c99l", "math_tr1", "math_tr1f", "math_tr1l"],
-        "metaparse": ["chrono", "system", "timer", "unit_test_framework"],
-        "mpi": ["mpi", "mpi_python", "python", "serialization"],
-        "program_options": ["program_options"],
-        "python": ["numpy", "python"],
-        "random": ["random", "system"],
-        "regex": ["regex"],
-        "serialization": ["serialization", "wserialization"],
-        "signals": ["signals"],
-        "system": ["system"],
-        "test": ["chrono", "prg_exec_monitor", "system", "test_exec_monitor", "timer", "unit_test_framework"],
-        "thread": ["system", "thread"],
-        "timer": ["chrono", "system", "timer"],
-        "type_erasure": ["chrono", "system", "thread", "type_erasure"],
-        "wave": ["chrono", "date_time", "filesystem", "system", "thread", "wave"],
-    }
-
     # The current python option requires the package to be built locally, to find default Python implementation
     # For `cxxdefines` and `cxxflags` '=' should be urlencoded to %3D,
     # because conan reject option values which contain '=' like: `-o cxxdefines=NDEBUG=1`.
@@ -268,8 +234,8 @@ class BoostConan(ConanFile):
         enabled_libs = [lib.split("without_")[1] for lib, disable in self._without_options().items() if disable == False]
         libs_created = []
         for lib in enabled_libs:
-            if lib in self.LIB_DEPENDENCIES:
-                libs_created += self.LIB_DEPENDENCIES[lib]
+            if lib in self._product_libs:
+                libs_created += self._product_libs[lib]
 
         self.cpp_info.libs.extend([self._linkname(lib) for lib in libs_created])
 
@@ -319,3 +285,44 @@ class BoostConan(ConanFile):
         self.output.info("Downloading%s %s..." % ("(cached)" if os.path.isfile(dest_filepath) else "", url))
         if not os.path.isfile(dest_filepath):
             tools.download(url, dest_filepath)
+
+    @property
+    def _product_libs(self):
+        # For dev: This dict was automatically created with tool/make_options.py
+        ret = {
+            "atomic": ["atomic"],
+            "chrono": ["chrono", "system"],
+            "container": ["container"],
+            "context": ["context"],
+            "coroutine": ["chrono", "context", "coroutine", "system", "thread"],
+            "coroutine2": ["context"],
+            "date_time": ["date_time"],
+            "exception": ["exception"],
+            "fiber": ["context", "fiber"],
+            "filesystem": ["filesystem", "system"],
+            "graph": ["graph", "regex"],
+            "graph_parallel": ["graph_parallel", "mpi", "serialization"],
+            "iostreams": ["iostreams"],
+            "locale": ["locale", "system"],
+            "log": ["atomic", "chrono", "date_time", "filesystem", "log", "log_setup", "regex", "system", "thread"],
+            "math": ["math_c99", "math_c99f", "math_c99l", "math_tr1", "math_tr1f", "math_tr1l"],
+            "metaparse": ["chrono", "system", "timer", "unit_test_framework"],
+            "mpi": ["mpi", "serialization"],
+            "program_options": ["program_options"],
+            "python": ["numpy", "python"],
+            "random": ["random", "system"],
+            "regex": ["regex"],
+            "serialization": ["serialization", "wserialization"],
+            "signals": ["signals"],
+            "system": ["system"],
+            "test": ["chrono", "prg_exec_monitor", "system", "test_exec_monitor", "timer", "unit_test_framework"],
+            "thread": ["system", "thread"],
+            "timer": ["chrono", "system", "timer"],
+            "type_erasure": ["chrono", "system", "thread", "type_erasure"],
+            "wave": ["chrono", "date_time", "filesystem", "system", "thread", "wave"],
+        }
+        if self.settings.os == "Macos":
+            ret["mpi"].extend(["mpi_python", "python"])
+        elif self.settings.os == "Windows":
+            ret["thread"].extend(["chrono"])
+        return ret
