@@ -99,6 +99,7 @@ class BoostConan(ConanFile):
         self._download(url, zip_name)
         if not os.path.isdir(self.FOLDER_NAME):
             tools.unzip(zip_name, ".")
+        os.unlink(zip_name)
 
         # Apply post-release patch: http://www.boost.org/users/history/version_1_63_0.html#version_1_63_0.post_release_patches
         patch_a67cc1b_url = "https://github.com/boostorg/atomic/commit/a67cc1b.patch"
