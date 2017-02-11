@@ -16,7 +16,7 @@ class BoostConan(ConanFile):
 
     FOLDER_NAME = "boost_%s" % version.replace(".", "_")
 
-    # For dev: This dict was automatically created with tool/construct_dependency_tree.sh
+    # For dev: This dict was automatically created with tool/make_options.py
     LIB_DEPENDENCIES = {
         "atomic": ["atomic"],
         "chrono": ["chrono", "system"],
@@ -55,7 +55,7 @@ class BoostConan(ConanFile):
     # because conan reject option values which contain '=' like: `-o cxxdefines=NDEBUG=1`.
     # Example: 
     #    -o cxxdefines="MACRO1;MACRO2%3D1" -o cxxflags="-Werror%3Duninitialized;-Wno-unknown-pragmas"
-    # For dev: This dict was automatically created with tool/construct_options.sh
+    # For dev: This dict was automatically created with tool/make_options.py
     options = {
         "shared": [True, False],
         "header_only": [False, True],
