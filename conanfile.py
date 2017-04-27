@@ -5,7 +5,7 @@ import platform, os, sys
 
 class BoostConan(ConanFile):
     name = "Boost"
-    version = "1.63.0"
+    version = "1.64.0"
     settings = "os", "arch", "compiler", "build_type"
     FOLDER_NAME = "boost_%s" % version.replace(".", "_")
     # The current python option requires the package to be built locally, to find default Python implementation
@@ -106,7 +106,7 @@ class BoostConan(ConanFile):
                 self.requires("bzip2/1.0.6@lasote/stable")
                 if not self.options.header_only:
                     self.options["bzip2/1.0.6"].shared = self.options.shared
-            self.requires("zlib/1.2.11@windoze/stable")
+            self.requires("zlib/1.2.8@lasote/stable")
             if not self.options.header_only:
                 self.options["zlib"].shared = self.options.shared
 
@@ -142,7 +142,11 @@ class BoostConan(ConanFile):
 
         flags = []
         if self.settings.compiler == "Visual Studio":
-            flags.append("toolset=msvc-%s.0" % self.settings.compiler.version)
+            if self.settings.compiler.version=="15":
+                # toolset=msvc-15.0 doesn't work
+                flags.append("toolset=msvc-14.1")
+            else:
+                flags.append("toolset=msvc-%s.0" % self.settings.compiler.version)
         elif str(self.settings.compiler) in ["clang", "gcc"]:
             flags.append("toolset=%s"% self.settings.compiler)
 
