@@ -4,7 +4,7 @@ import os
 import sys
 
 ############### CONFIGURE THESE VALUES ##################
-default_user = "windoze"
+default_user = "lasote"
 default_channel = "stable"
 #########################################################
 
@@ -15,7 +15,7 @@ class DefaultNameConan(ConanFile):
     name = "DefaultName"
     version = "0.1"
     settings = "os", "compiler", "arch", "build_type"
-    requires = "Boost/1.63.0@%s/%s" % (username, channel)
+    requires = "Boost/1.64.0@%s/%s" % (username, channel)
     generators = "cmake"
 
     def config(self):
